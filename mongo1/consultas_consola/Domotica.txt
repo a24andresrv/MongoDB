@@ -1,0 +1,80 @@
+1. Insertar 3 mediciones con fechas distintas.
+
+db.mediciones.insertMany([
+    {
+        sensorId:1,
+        ts: new Date(),
+        tipo : "temp",
+        valor: 34,
+        ubicación: "salón"
+    },
+    {
+        sensorId:2,
+        ts: new Date(),
+        tipo : "hum",
+        valor: 50,
+        ubicación: "habitación"
+    },
+    {
+        sensorId:3,
+        ts: new Date(),
+        tipo : "hum",
+        valor: 20,
+        ubicación: "baño"
+    }
+])
+
+2. Consultar por sensorId y rango ts (últimas 24h).
+
+db.mediciones.find({ts :{$gt: new Date(new Date()- 24*60*60*1000)}},{sensorId:1})
+[
+  { _id: ObjectId('69732c29fca364b6058ce5b0'), sensorId: 1 },
+  { _id: ObjectId('69732c29fca364b6058ce5b1'), sensorId: 2 },
+  { _id: ObjectId('69732c29fca364b6058ce5b2'), sensorId: 3 }
+]
+
+3. Consultar mediciones por encima de umbral.
+
+db.mediciones.find({valor:{$gt:30}})
+
+[
+  {
+    _id: ObjectId('69732c29fca364b6058ce5b0'),
+    sensorId: 1,
+    ts: ISODate('2026-01-23T08:07:05.317Z'),
+    tipo: 'temp',
+    valor: 34,
+    'ubicación': 'salón'
+  },
+  {
+    _id: ObjectId('69732c29fca364b6058ce5b1'),
+    sensorId: 2,
+    ts: ISODate('2026-01-23T08:07:05.317Z'),
+    tipo: 'hum',
+    valor: 50,
+    'ubicación': 'habitación'
+  }
+]
+
+
+4. Corregir mediciones erróneas (updateMany).
+
+db.mediciones.updateMany(
+    {tipo:"hum"},
+    {$inc: {valor:4}})
+
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 2,
+  modifiedCount: 2,
+  upsertedCount: 0
+}
+
+5. Eliminar mediciones anteriores a una fecha (deleteMany).
+
+db.mediciones.deleteMany({ts:{$lt:new Date(2026,3,2)}})
+
+{ acknowledged: true, deletedCount: 3 }
+
+

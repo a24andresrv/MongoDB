@@ -1,0 +1,174 @@
+1. Insertar 2 clientes y 3 pedidos.
+
+db.clientes.insertMany([
+  {
+    idCliente: 1,
+    nombre: "Anxo",
+    emails: [
+      "a24anxoba@iessanclemente.net",
+      "a24andresrv@iessanclemente.net"
+    ],
+    direcciones: [
+      {
+        direccion: {
+          calle: "Calle Santiago de Chile",
+          numero: 67,
+          codigo_postal: 12504,
+          ciudad: "Santiago de Compostela"
+        }
+      },
+      {
+        direccion: {
+          calle: "Avenida de Lugo",
+          numero: 23,
+          codigo_postal: 23456,
+          ciudad: "Santiago de Compostela"
+        }
+      }
+    ]
+  },
+  {
+    idCliente: 2,
+    nombre: "Andrés",
+    emails: [
+      "juanperez@gmail.com",
+      "maria.lopez@yahoo.com"
+    ],
+    direcciones: [
+      {
+        direccion: {
+          calle: "Calle Mayor",
+          numero: 45,
+          codigo_postal: 28013,
+          ciudad: "Madrid"
+        }
+      },
+      {
+        direccion: {
+          calle: "Avenida Libertad",
+          numero: 12,
+          codigo_postal: 46002,
+          ciudad: "Valencia"
+        }
+      }
+    ]
+  }
+])
+
+db.pedidos.insertMany([
+  {
+    idPedido: 1,
+    idCliente: 1,
+    fecha: new Date(),
+    lineas: [
+      { sku: 1234545, nombre: "Gatoecho Games", cantidad: 3, precio: 3 },
+      { sku: 222222222, nombre: "Ordenador Asus", cantidad: 6, precio: 45 }
+    ],
+    estado: "enviado"
+  },
+  {
+    idPedido: 2,
+    idCliente: 2,
+    fecha: new Date(),
+    lineas: [
+      { sku: 33333333, nombre: "Teclado Mechanical", cantidad: 2, precio: 25 },
+      { sku: 44444444, nombre: "Ratón Gaming", cantidad: 1, precio: 35 }
+    ],
+    estado: "pendiente"
+  },
+  {
+    idPedido: 3,
+    idCliente: 1,
+    fecha: new Date(),
+    lineas: [
+      { sku: 55555555, nombre: "Auriculares Bluetooth", cantidad: 1, precio: 50 },
+      { sku: 66666666, nombre: "Micrófono USB", cantidad: 1, precio: 70 }
+    ],
+    estado: "enviado"
+  }
+])
+
+2. Pedidos de un cliente por idCliente.
+
+db.pedidos.find({idCliente:1}).sort({fecha:1})
+
+[
+  {
+    _id: ObjectId('69733d19fca364b6058ce5b5'),
+    idPedido: 1,
+    idCliente: 1,
+    fecha: ISODate('2026-01-23T09:19:21.309Z'),
+    lineas: [
+      { sku: 1234545, nombre: 'Gatoecho Games', cantidad: 3, precio: 3 },
+      { sku: 222222222, nombre: 'Ordenador Asus', cantidad: 6, precio: 45 }
+    ],
+    estado: 'enviado'
+  },
+  {
+    _id: ObjectId('69733d19fca364b6058ce5b7'),
+    idPedido: 3,
+    idCliente: 1,
+    fecha: ISODate('2026-01-23T09:19:21.309Z'),
+    lineas: [
+      {
+        sku: 55555555,
+        nombre: 'Auriculares Bluetooth',
+        cantidad: 1,
+        precio: 50
+      },
+      { sku: 66666666, nombre: 'Micrófono USB', cantidad: 1, precio: 70 }
+    ],
+    estado: 'enviado'
+  }
+]
+
+3. Pedidos con cantidad > 100 
+
+
+db.pedidos.aggregate([
+{
+  $project:{
+    _id:0,
+    idPedido:1,
+    idCliente:1,
+    fecha:1,
+    estado:1,
+    cantidadTotal:{ $sum: "$lineas.cantidad" }
+
+  },
+  {
+    $match:{
+      cantidadTotal ; {$gt:100}
+    }
+  }
+}
+]
+)
+
+
+db.pedidos.aggregate([
+  {$unwind:"$lineas"},
+  {$match:"lineas.cantidad": {$gt:100} },
+  {$project:{
+    _id:0,
+    idPedido:1,
+    idCliente:1,
+    fecha:1,
+    estado:1,
+    linea:"$lineas"}}
+
+])
+
+4. Cambiar el estado de un pedido.
+
+db.updateOne(
+    {idPedido:1},
+    {$set:{estado:"recibido"}}
+)
+
+5. Cambiar el email principal de un cliente.
+
+db.clientes.updateOne(
+  {idCliente:1},
+  {$set:{"emails.0":"nuevoemail@gmail.com"}}
+)
